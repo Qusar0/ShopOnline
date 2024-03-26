@@ -3,7 +3,7 @@
 
 @if (Products == null)
 {
-    <h3>Loading products...</h3>
+    <DisplaySpinner />
 }
 else
 {
@@ -13,21 +13,15 @@ else
 
     @if(productCount > 0)
     {
-        var groupedProductsByCategory = from product in Products
-                                        group product by product.CategoryId into prodByCatGroup
-                                        orderby prodByCatGroup.Key
-                                        select prodByCatGroup;
-            
-            @foreach(var prodGrop in groupedProductsByCategory)
-            {
-                <h4>@prodGrop.FirstOrDefault(pg => pg.CategoryId == prodGrop.Key)</h4>
+        @foreach(var prodGrop in GetGroupedByCategory())
+        {
+            <h4>@GetCategoryName(prodGrop)</h4>
                 
-                <div class="row mt-3">
-                    <DisplayProduct Products="@prodGrop"></DisplayProduct>
-                </div>
-                <hr class="mb-3"/>
-            }
-
+            <div class="row mt-3">
+                <DisplayProduct Products="@prodGrop.Take(4)"></DisplayProduct>
+            </div>
+            <hr class="mb-3"/>
+        }
     }
 }
 
