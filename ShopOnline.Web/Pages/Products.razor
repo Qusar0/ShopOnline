@@ -1,0 +1,33 @@
+﻿@page "/"
+@inherits ProductsBase
+
+@if (Products == null)
+{
+    <h3>Loading products...</h3>
+}
+else
+{
+    <h3 class="mb-5">Products</h3>
+
+    var productCount = Products.Count();
+
+    @if(productCount > 0)
+    {
+        var groupedProductsByCategory = from product in Products
+                                        group product by product.CategoryId into prodByCatGroup
+                                        orderby prodByCatGroup.Key
+                                        select prodByCatGroup;
+            
+            @foreach(var prodGrop in groupedProductsByCategory)
+            {
+                <h4>@prodGrop.FirstOrDefault(pg => pg.CategoryId == prodGrop.Key)</h4>
+                
+                <div class="row mt-3">
+                    <DisplayProduct Products="@prodGrop"></DisplayProduct>
+                </div>
+                <hr class="mb-3"/>
+            }
+
+    }
+}
+
