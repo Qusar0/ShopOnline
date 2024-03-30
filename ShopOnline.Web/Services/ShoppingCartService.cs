@@ -2,12 +2,16 @@
 using ShopOnline.Web.Services.Contracts;
 using System.Net.Http.Json;
 using System.Net;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace ShopOnline.Web.Services
 {
     public class ShoppingCartService : IShoppingCartService
     {
         private readonly HttpClient httpClient;
+        public event Action<int> OnShoppingCartChanged;
 
         public ShoppingCartService(HttpClient httpClient)
         {
@@ -43,7 +47,27 @@ namespace ShopOnline.Web.Services
             }
         }
 
-        public async Task<IEnumerable<CartItemDto>> GetItems(int userId)
+        public async Task<CartItemDto> DeleteItem(int id)
+        {
+            try
+            {
+                var response = await httpClient.DeleteAsync($"api/ShoppingCart/{id}");
+
+                if(response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<CartItemDto>();
+                }
+
+                return default(CartItemDto);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<List<CartItemDto>> GetItems(int userId)
         {
             try
             {
@@ -53,10 +77,10 @@ namespace ShopOnline.Web.Services
                 {
                     if(response.StatusCode == HttpStatusCode.NoContent)
                     {
-                        return Enumerable.Empty<CartItemDto>();
+                        return Enumerable.Empty<CartItemDto>().ToList();
                     }
 
-                    return await response.Content.ReadFromJsonAsync<IEnumerable<CartItemDto>>();
+                    return await response.Content.ReadFromJsonAsync<List<CartItemDto>>();
                 }
                 else
                 {
@@ -64,6 +88,37 @@ namespace ShopOnline.Web.Services
 
                     throw new Exception($"Http status: {response.StatusCode} Message: {message}");
                 }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public void RaiseEventOnShoppingCartChanged(int totalQty)
+        {
+            if (OnShoppingCartChanged != null)
+            {
+                OnShoppingCartChanged.Invoke(totalQty);
+            }
+        }
+
+        public async Task<CartItemDto> UpdateQty(CartItemQtyUpdateDto cartItemQtyUpdateDto)
+        {
+            try
+            {
+                var jsonRequest = JsonConvert.SerializeObject(cartItemQtyUpdateDto);
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json-patch+json");
+
+
+                var response = await httpClient.PatchAsync($"api/ShoppingCart/{cartItemQtyUpdateDto.CartItemId}", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<CartItemDto>();
+                }
+                return null;
             }
             catch (Exception)
             {
