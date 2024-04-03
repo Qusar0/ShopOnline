@@ -29,6 +29,15 @@
     </div>
     <script src="js/ShoppingCartFunctions.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
+
+    <div id="paypal-button-container"></div>
+    <p id="result-message"></p>
+    <!-- Replace the "test" client-id value with your client-id -->
+    <script src="https://www.paypal.com/sdk/js?client-id=test&components=buttons&enable-funding=paylater,venmo,card" data-sdk-integration-source="integrationbuilder_sc"></script>
+    <script src="js/app.js"></script>
+
+</html>
+
 </body>
 
 </html>
